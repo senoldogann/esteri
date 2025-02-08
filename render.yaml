@@ -11,12 +11,12 @@ services:
       - key: PORT
         value: 8080
       - key: MONGODB_URI
-        value: mongodb+srv://senolmc3302:serseribaba02@esteri.3likl.mongodb.net/?retryWrites=true&w=majority&appName=esteri
+        sync: false
       - key: JWT_SECRET
-        value: senoldogan3333
+        sync: false
       - key: JWT_EXPIRE
         value: 24h
       - key: FRONTEND_URL
         value: https://esterimbenim.netlify.app
     healthCheckPath: /api/health
-    autoDeploy: true 
+    autoDeploy: true
