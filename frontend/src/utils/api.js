@@ -14,8 +14,7 @@ const api = axios.create({
   withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Origin': window.location.origin
+    'Accept': 'application/json'
   },
   timeout: 60000 // Timeout süresini 60 saniyeye çıkardık
 });
@@ -46,17 +45,12 @@ api.interceptors.request.use((config) => {
   // Request URL'ini logla
   console.log('Making request to:', config.baseURL + config.url);
   console.log('Environment:', import.meta.env.PROD ? 'Production' : 'Development');
-  console.log('Request headers:', config.headers);
 
   // Token varsa ekle
   const token = localStorage.getItem('token');
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`;
   }
-
-  // CORS başlıklarını ekle
-  config.headers['Origin'] = window.location.origin;
-  config.headers['Access-Control-Allow-Origin'] = '*';
 
   return config;
 }, (error) => {
