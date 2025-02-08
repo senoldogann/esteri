@@ -91,13 +91,64 @@ const limiter = rateLimit({
 });
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    message: 'Server is healthy',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    // MongoDB bağlantısını kontrol et
+    const { connection } = require('mongoose');
+    const dbStatus = connection.readyState === 1 ? 'connected' : 'disconnected';
+
+    // Redis bağlantısını kontrol et
+    const { redisClient } = require('./utils/database');
+    let redisStatus = 'disconnected';
+    try {
+      await redisClient.ping();
+      redisStatus = 'connected';
+    } catch (error) {
+      redisStatus = 'error: ' + error.message;
+    }
+
+    // Uploads klasörünü kontrol et
+    const fs = require('fs').promises;
+    const uploadsDir = path.join(__dirname, '../uploads/products');
+    let uploadsStatus = 'not found';
+    try {
+      await fs.access(uploadsDir);
+      uploadsStatus = 'accessible';
+    } catch (error) {
+      uploadsStatus = 'error: ' + error.message;
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Server is healthy',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      version: process.version,
+      memory: process.memoryUsage(),
+      uptime: process.uptime(),
+      connections: {
+        mongodb: dbStatus,
+        redis: redisStatus
+      },
+      storage: {
+        uploads: uploadsStatus
+      },
+      config: {
+        port: process.env.PORT || 5001,
+        cors: {
+          enabled: true,
+          origins: allowedOrigins
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Health check failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // CORS ayarları
