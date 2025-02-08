@@ -129,7 +129,7 @@ app.use(cors({
     }
   },
   credentials: false,
-  methods: ['GET', 'POST', 'PUT', DELETE, 'OPTIONS', 'PATCH'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
 
