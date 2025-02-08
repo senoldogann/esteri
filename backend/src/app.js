@@ -96,41 +96,53 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5001',
-  'https://esteri-backend.onrender.com',
-  'https://esteri-backend.onrender.com/'
+  'https://esteri-backend.onrender.com'
 ];
 
 // CORS öncesi middleware
 app.use((req, res, next) => {
   const origin = req.headers.origin;
+  
+  // Origin kontrolü
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'false');
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24 saat
   }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
-  res.setHeader('Access-Control-Allow-Credentials', 'false');
   
   // OPTIONS istekleri için hemen yanıt ver
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
+  
+  // Geçersiz origin için hata döndür
+  if (!allowedOrigins.includes(origin) && origin) {
+    return res.status(403).json({
+      status: 'error',
+      message: 'CORS policy violation: Origin not allowed',
+      origin: origin
+    });
+  }
+  
   next();
 });
 
 // CORS middleware
 app.use(cors({
   origin: function(origin, callback) {
-    // origin null olabilir (örn: Postman istekleri)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       logger.error(`CORS Error: Origin ${origin} not allowed`);
-      callback(new Error('CORS policy violation'));
+      callback(new Error('CORS policy violation: Origin not allowed'));
     }
   },
   credentials: false,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  maxAge: 86400 // 24 saat
 }));
 
 // Debug middleware
