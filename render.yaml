@@ -32,6 +32,13 @@ services:
       sizeGB: 1
     scaling:
       minInstances: 1
-      maxInstances: 1
-      targetMemoryPercent: 90
-      targetCPUPercent: 90
+      maxInstances: 2
+      targetMemoryPercent: 85
+      targetCPUPercent: 85
+    headers:
+      - path: /*
+        name: Access-Control-Allow-Origin
+        value: https://esterimbenim.netlify.app
+      - path: /*
+        name: Cache-Control
+        value: no-cache

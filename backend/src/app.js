@@ -120,7 +120,7 @@ app.get('/api/health', async (req, res) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'Server is healthy',
+      message: 'Sunucu sağlıklı çalışıyor',
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV,
       version: process.version,
@@ -144,7 +144,7 @@ app.get('/api/health', async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      message: 'Health check failed',
+      message: 'Sağlık kontrolü başarısız',
       error: error.message,
       timestamp: new Date().toISOString()
     });
