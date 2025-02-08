@@ -29,11 +29,16 @@ const authApi = axios.create({
 
 // Request interceptor
 api.interceptors.request.use((config) => {
-  console.log('API Request:', {
-    url: config.url,
-    method: config.method,
-    headers: config.headers
-  });
+  // API URL'i kontrol et ve gerekirse güncelle
+  const apiUrl = import.meta.env.VITE_API_URL;
+  if (apiUrl) {
+    config.baseURL = apiUrl;
+  }
+  
+  // Request URL'ini logla (development ortamında)
+  if (import.meta.env.DEV) {
+    console.log('Request URL:', config.baseURL + config.url);
+  }
 
   // Token varsa ekle
   const token = localStorage.getItem('token');
@@ -110,13 +115,13 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // API hatalarını logla
     console.error('API Error:', {
-      url: error.config?.url,
       status: error.response?.status,
       message: error.response?.data?.message || error.message,
-      error: error
+      url: error.config?.url
     });
-
+    
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       if (!window.location.pathname.includes('/login')) {

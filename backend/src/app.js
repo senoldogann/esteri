@@ -91,9 +91,24 @@ const limiter = rateLimit({
 });
 
 // CORS ayarları
+const allowedOrigins = [
+  'https://esterimbenim.netlify.app',
+  'http://localhost:5173',
+  'http://localhost:5174'
+];
+
 app.use(cors({
-  origin: ['https://esterimbenim.netlify.app', 'http://localhost:5173'],
-  credentials: true
+  origin: function(origin, callback) {
+    // origin null olabilir (örn: Postman istekleri)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy violation'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // CORS Pre-flight istekleri için
