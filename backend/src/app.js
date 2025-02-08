@@ -160,6 +160,25 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// CORS ayarları
+const corsOptions = {
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      logger.error(`CORS Error: Origin ${origin} not allowed`);
+      callback(new Error('CORS policy violation: Origin not allowed'));
+    }
+  },
+  credentials: false,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  maxAge: 86400 // 24 saat
+};
+
+// CORS middleware
+app.use(cors(corsOptions));
+
 // CORS öncesi middleware
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -167,10 +186,10 @@ app.use((req, res, next) => {
   // Origin kontrolü
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
-    res.setHeader('Access-Control-Allow-Credentials', 'false');
-    res.setHeader('Access-Control-Max-Age', '86400'); // 24 saat
+    res.setHeader('Access-Control-Allow-Methods', corsOptions.methods.join(', '));
+    res.setHeader('Access-Control-Allow-Headers', corsOptions.allowedHeaders.join(', '));
+    res.setHeader('Access-Control-Allow-Credentials', String(corsOptions.credentials));
+    res.setHeader('Access-Control-Max-Age', String(corsOptions.maxAge));
   }
   
   // OPTIONS istekleri için hemen yanıt ver
@@ -189,22 +208,6 @@ app.use((req, res, next) => {
   
   next();
 });
-
-// CORS middleware
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      logger.error(`CORS Error: Origin ${origin} not allowed`);
-      callback(new Error('CORS policy violation: Origin not allowed'));
-    }
-  },
-  credentials: false,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-  maxAge: 86400 // 24 saat
-}));
 
 // Debug middleware
 app.use((req, res, next) => {
