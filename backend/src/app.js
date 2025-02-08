@@ -90,6 +90,16 @@ const limiter = rateLimit({
     }
 });
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Server is healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV
+  });
+});
+
 // CORS ayarları
 const allowedOrigins = [
   'https://esterimbenim.netlify.app',
