@@ -38,8 +38,8 @@ const reservationRoutes = require('./routes/reservationRoutes');
 // Express uygulamasını oluştur
 const app = express();
 
-// Proxy güvenini ayarla
-app.set('trust proxy', 1);
+// Proxy güvenini ayarla (Render için gerekli)
+app.enable('trust proxy');
 
 // Body parsing middleware'leri
 app.use(express.json({
@@ -87,7 +87,6 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     skipSuccessfulRequests: true, // Başarılı istekleri sayma
-    trustProxy: true,
     skip: (req) => {
         // Auth ve diğer önemli endpoint'ler için rate limit'i atla
         const skipPaths = [
@@ -100,6 +99,14 @@ const limiter = rateLimit({
             '/api/activities'
         ];
         return skipPaths.some(path => req.path.startsWith(path));
+    },
+    // IP adresi belirleme fonksiyonu
+    keyGenerator: (req) => {
+        // X-Forwarded-For header'ından IP adresini al
+        return req.ip || 
+               req.headers['x-forwarded-for'] || 
+               req.headers['x-real-ip'] ||
+               req.connection.remoteAddress;
     }
 });
 
