@@ -7,7 +7,7 @@ const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 // Axios instance oluştur
 const api = axios.create({
   baseURL: apiUrl,
-  withCredentials: true,
+  withCredentials: false, // CORS sorunları için false yapıyoruz
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -18,7 +18,7 @@ const api = axios.create({
 // Auth işlemleri için özel instance
 const authApi = axios.create({
   baseURL: apiUrl,
-  withCredentials: true,
+  withCredentials: false, // CORS sorunları için false yapıyoruz
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
