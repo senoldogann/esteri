@@ -13,6 +13,7 @@ module.exports = {
     },
     CORS_OPTIONS: {
         origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-        credentials: true
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
     }
 }; 
