@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" id="favicon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>RavintolaEsteri</title>
+    <script type="module">
+      const updateFavicon = async () => {
+        try {
+          const apiUrl = import.meta.env?.VITE_API_URL || 'http://localhost:5001';
+          const response = await fetch(`${apiUrl}/api/site-settings`);
+          const data = await response.json();
+          if (data.data && data.data.favicon) {
+            const faviconUrl = data.data.favicon.startsWith('http') 
+              ? data.data.favicon 
+              : `${apiUrl}/${data.data.favicon}`;
+            document.getElementById('favicon').href = faviconUrl;
+          }
+        } catch (error) {
+          console.error('Favicon yüklenirken hata:', error);
+        }
+      };
+
+      window.addEventListener('load', updateFavicon);
+      
+      let lastPathname = window.location.pathname;
+      setInterval(() => {
+        const currentPathname = window.location.pathname;
+        if (currentPathname !== lastPathname) {
+          lastPathname = currentPathname;
+          updateFavicon();
+        }
+      }, 100);
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

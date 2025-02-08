@@ -1,0 +1,21 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "react-helmet-async": "^2.0.5"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config tests/config/jest.config.cjs",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config tests/config/jest.config.cjs --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config tests/config/jest.config.cjs --coverage",
+    "test:e2e": "cypress run --config-file tests/config/cypress.config.js",
+    "test:e2e:open": "cypress open --config-file tests/config/cypress.config.js",
+    "test:performance": "lhci autorun --config=tests/config/lighthouserc.js"
+  }
+}
