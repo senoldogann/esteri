@@ -38,6 +38,9 @@ const reservationRoutes = require('./routes/reservationRoutes');
 // Express uygulamasını oluştur
 const app = express();
 
+// Proxy güvenini ayarla
+app.set('trust proxy', 1);
+
 // Body parsing middleware'leri
 app.use(express.json({
   limit: '10kb',
@@ -84,6 +87,7 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     skipSuccessfulRequests: true, // Başarılı istekleri sayma
+    trustProxy: true,
     skip: (req) => {
         // Auth ve diğer önemli endpoint'ler için rate limit'i atla
         const skipPaths = [

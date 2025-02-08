@@ -1,13 +1,29 @@
-const { app, startServer } = require('./src/app');
+const { app } = require('./src/app');
 const logger = require('./src/utils/logger');
+const { connectDB } = require('./src/utils/database');
 
 // Port numarasını al
 const PORT = process.env.PORT || 10000;
 
 // Sunucuyu başlat
-app.listen(PORT, '0.0.0.0', () => {
-    logger.info(`Sunucu ${PORT} portunda çalışıyor`);
-});
+const startServer = async () => {
+    try {
+        // MongoDB'ye bağlan
+        await connectDB();
+        logger.info('MongoDB bağlantısı başarılı');
+
+        // Sunucuyu başlat
+        app.listen(PORT, '0.0.0.0', () => {
+            logger.info(`Sunucu ${PORT} portunda çalışıyor`);
+        });
+    } catch (error) {
+        logger.error('Sunucu başlatılamadı:', error);
+        process.exit(1);
+    }
+};
+
+// Sunucuyu başlat
+startServer();
 
 // Graceful shutdown
 const shutdown = async () => {
