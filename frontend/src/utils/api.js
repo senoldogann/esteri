@@ -2,7 +2,9 @@ import axios from 'axios';
 import DOMPurify from 'dompurify';
 
 // API URL'ini ortam değişkeninden al
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const apiUrl = import.meta.env.PROD 
+  ? 'https://esteri-backend.onrender.com'
+  : import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 // Axios instance oluştur
 const api = axios.create({
@@ -30,10 +32,9 @@ const authApi = axios.create({
 // Request interceptor
 api.interceptors.request.use((config) => {
   // API URL'i kontrol et ve gerekirse güncelle
-  const apiUrl = import.meta.env.VITE_API_URL;
-  if (apiUrl) {
-    config.baseURL = apiUrl;
-  }
+  config.baseURL = import.meta.env.PROD 
+    ? 'https://esteri-backend.onrender.com'
+    : import.meta.env.VITE_API_URL || 'http://localhost:5001';
   
   // Request URL'ini logla (development ortamında)
   if (import.meta.env.DEV) {
