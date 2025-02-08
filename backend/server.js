@@ -1,8 +1,13 @@
 const { app, startServer } = require('./src/app');
 const logger = require('./src/utils/logger');
 
-// Başlat
-startServer();
+// Port numarasını al
+const PORT = process.env.PORT || 10000;
+
+// Sunucuyu başlat
+app.listen(PORT, '0.0.0.0', () => {
+    logger.info(`Sunucu ${PORT} portunda çalışıyor`);
+});
 
 // Graceful shutdown
 const shutdown = async () => {
