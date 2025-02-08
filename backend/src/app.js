@@ -94,7 +94,9 @@ const limiter = rateLimit({
 const allowedOrigins = [
   'https://esterimbenim.netlify.app',
   'http://localhost:5173',
-  'http://localhost:5174'
+  'http://localhost:5174',
+  'http://localhost:5001',
+  'https://esteri-backend.onrender.com'
 ];
 
 app.use(cors({
@@ -103,12 +105,13 @@ app.use(cors({
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      logger.error(`CORS Error: Origin ${origin} not allowed`);
       callback(new Error('CORS policy violation'));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  credentials: false,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
 
 // CORS Pre-flight istekleri için

@@ -6,24 +6,28 @@ const apiUrl = import.meta.env.PROD
   ? 'https://esteri-backend.onrender.com'
   : import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
+console.log('Current API URL:', apiUrl); // Debug için
+
 // Axios instance oluştur
 const api = axios.create({
   baseURL: apiUrl,
-  withCredentials: false, // CORS sorunları için false yapıyoruz
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'Origin': window.location.origin
   },
-  timeout: 30000 // 30 saniye timeout
+  timeout: 30000
 });
 
 // Auth işlemleri için özel instance
 const authApi = axios.create({
   baseURL: apiUrl,
-  withCredentials: false, // CORS sorunları için false yapıyoruz
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'Origin': window.location.origin
   },
   timeout: 30000,
   validateStatus: status => status >= 200 && status < 500
@@ -36,10 +40,8 @@ api.interceptors.request.use((config) => {
     ? 'https://esteri-backend.onrender.com'
     : import.meta.env.VITE_API_URL || 'http://localhost:5001';
   
-  // Request URL'ini logla (development ortamında)
-  if (import.meta.env.DEV) {
-    console.log('Request URL:', config.baseURL + config.url);
-  }
+  // Request URL'ini logla
+  console.log('Making request to:', config.baseURL + config.url);
 
   // Token varsa ekle
   const token = localStorage.getItem('token');
