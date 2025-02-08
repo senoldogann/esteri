@@ -96,13 +96,32 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5001',
-  'https://esteri-backend.onrender.com'
+  'https://esteri-backend.onrender.com',
+  'https://esteri-backend.onrender.com/'
 ];
 
+// CORS öncesi middleware
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'false');
+  
+  // OPTIONS istekleri için hemen yanıt ver
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+// CORS middleware
 app.use(cors({
   origin: function(origin, callback) {
     // origin null olabilir (örn: Postman istekleri)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       logger.error(`CORS Error: Origin ${origin} not allowed`);
@@ -110,16 +129,21 @@ app.use(cors({
     }
   },
   credentials: false,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  methods: ['GET', 'POST', 'PUT', DELETE, 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
 
-// CORS Pre-flight istekleri için
-app.options('*', cors());
-
-// Debug middleware ekle
+// Debug middleware
 app.use((req, res, next) => {
-  logger.info(`Incoming Request - Method: ${req.method}, Path: ${req.path}, Origin: ${req.headers.origin}`);
+  logger.info({
+    message: 'Incoming Request',
+    method: req.method,
+    path: req.path,
+    origin: req.headers.origin,
+    headers: req.headers,
+    query: req.query,
+    body: req.body
+  });
   next();
 });
 
@@ -166,40 +190,34 @@ app.use((req, res) => {
     });
 });
 
-// Hata yakalama middleware'i
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Error details:', {
-    message: err.message,
+  logger.error({
+    message: 'Error occurred',
+    error: err.message,
     stack: err.stack,
-    type: err.type,
     path: req.path,
     method: req.method,
-    body: req.body,
-    headers: req.headers
+    origin: req.headers.origin
   });
-
-  if (err.type === 'entity.parse.failed') {
-    return res.status(400).json({
-      status: 'error',
-      message: 'Geçersiz JSON formatı',
-      details: err.message
-    });
-  }
 
   if (err.name === 'CORSError') {
     return res.status(403).json({
       status: 'error',
       message: 'CORS hatası',
-      details: err.message
+      details: err.message,
+      origin: req.headers.origin
     });
   }
-  
+
   res.status(err.status || 500).json({
     status: 'error',
     message: err.message || 'Sunucu hatası',
-    ...(process.env.NODE_ENV === 'development' && { 
+    path: req.path,
+    method: req.method,
+    ...(process.env.NODE_ENV === 'development' && {
       stack: err.stack,
-      details: err 
+      details: err
     })
   });
 });

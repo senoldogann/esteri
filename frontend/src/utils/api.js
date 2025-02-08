@@ -17,7 +17,7 @@ const api = axios.create({
     'Accept': 'application/json',
     'Origin': window.location.origin
   },
-  timeout: 30000
+  timeout: 60000 // Timeout süresini 60 saniyeye çıkardık
 });
 
 // Auth işlemleri için özel instance
@@ -45,6 +45,7 @@ api.interceptors.request.use((config) => {
   
   // Request URL'ini logla
   console.log('Making request to:', baseURL + config.url);
+  console.log('Request headers:', config.headers);
 
   // Token varsa ekle
   const token = localStorage.getItem('token');
@@ -116,17 +117,19 @@ api.interceptors.response.use(
     console.log('API Response:', {
       url: response.config.url,
       status: response.status,
-      data: response.data
+      data: response.data,
+      headers: response.headers
     });
     return response;
   },
   (error) => {
-    // API hatalarını logla
     console.error('API Error:', {
       status: error.response?.status,
       message: error.response?.data?.message || error.message,
       url: error.config?.url,
-      baseURL: error.config?.baseURL
+      baseURL: error.config?.baseURL,
+      headers: error.config?.headers,
+      response: error.response?.data
     });
     
     if (error.response?.status === 401) {
@@ -198,12 +201,19 @@ const apiWrapper = {
   get: async (url, config = {}) => {
     try {
       console.log('GET Request to:', apiUrl + url);
-      const response = await api.get(url, config);
+      const response = await api.get(url, {
+        ...config,
+        headers: {
+          ...config.headers,
+          'Origin': window.location.origin
+        }
+      });
       return response;
     } catch (error) {
       console.error('GET Request Error:', {
         url: apiUrl + url,
-        error: error.message
+        error: error.message,
+        response: error.response?.data
       });
       throw error;
     }
@@ -211,12 +221,19 @@ const apiWrapper = {
   post: async (url, data = {}, config = {}) => {
     try {
       console.log('POST Request to:', apiUrl + url);
-      const response = await api.post(url, data, config);
+      const response = await api.post(url, data, {
+        ...config,
+        headers: {
+          ...config.headers,
+          'Origin': window.location.origin
+        }
+      });
       return response;
     } catch (error) {
       console.error('POST Request Error:', {
         url: apiUrl + url,
-        error: error.message
+        error: error.message,
+        response: error.response?.data
       });
       throw error;
     }
@@ -224,12 +241,19 @@ const apiWrapper = {
   put: async (url, data = {}, config = {}) => {
     try {
       console.log('PUT Request to:', apiUrl + url);
-      const response = await api.put(url, data, config);
+      const response = await api.put(url, data, {
+        ...config,
+        headers: {
+          ...config.headers,
+          'Origin': window.location.origin
+        }
+      });
       return response;
     } catch (error) {
       console.error('PUT Request Error:', {
         url: apiUrl + url,
-        error: error.message
+        error: error.message,
+        response: error.response?.data
       });
       throw error;
     }
@@ -237,12 +261,19 @@ const apiWrapper = {
   delete: async (url, config = {}) => {
     try {
       console.log('DELETE Request to:', apiUrl + url);
-      const response = await api.delete(url, config);
+      const response = await api.delete(url, {
+        ...config,
+        headers: {
+          ...config.headers,
+          'Origin': window.location.origin
+        }
+      });
       return response;
     } catch (error) {
       console.error('DELETE Request Error:', {
         url: apiUrl + url,
-        error: error.message
+        error: error.message,
+        response: error.response?.data
       });
       throw error;
     }
