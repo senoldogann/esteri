@@ -44,7 +44,8 @@ api.interceptors.request.use((config) => {
   config.baseURL = baseURL;
   
   // Request URL'ini logla
-  console.log('Making request to:', baseURL + config.url);
+  console.log('Making request to:', config.baseURL + config.url);
+  console.log('Environment:', import.meta.env.PROD ? 'Production' : 'Development');
   console.log('Request headers:', config.headers);
 
   // Token varsa ekle
@@ -52,6 +53,10 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`;
   }
+
+  // CORS başlıklarını ekle
+  config.headers['Origin'] = window.location.origin;
+  config.headers['Access-Control-Allow-Origin'] = '*';
 
   return config;
 }, (error) => {
@@ -116,9 +121,11 @@ api.interceptors.response.use(
   (response) => {
     console.log('API Response:', {
       url: response.config.url,
+      baseURL: response.config.baseURL,
       status: response.status,
       data: response.data,
-      headers: response.headers
+      headers: response.headers,
+      environment: import.meta.env.PROD ? 'Production' : 'Development'
     });
     return response;
   },
@@ -129,8 +136,18 @@ api.interceptors.response.use(
       url: error.config?.url,
       baseURL: error.config?.baseURL,
       headers: error.config?.headers,
-      response: error.response?.data
+      response: error.response?.data,
+      environment: import.meta.env.PROD ? 'Production' : 'Development'
     });
+    
+    // CORS hatası kontrolü
+    if (error.message.includes('Network Error') || error.response?.status === 0) {
+      console.error('CORS Error detected:', {
+        origin: window.location.origin,
+        target: error.config?.baseURL,
+        headers: error.config?.headers
+      });
+    }
     
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
