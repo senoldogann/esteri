@@ -36,12 +36,15 @@ const authApi = axios.create({
 // Request interceptor
 api.interceptors.request.use((config) => {
   // API URL'i kontrol et ve gerekirse güncelle
-  config.baseURL = import.meta.env.PROD 
+  const baseURL = import.meta.env.PROD 
     ? 'https://esteri-backend.onrender.com'
     : import.meta.env.VITE_API_URL || 'http://localhost:5001';
   
+  // URL'i güncelle
+  config.baseURL = baseURL;
+  
   // Request URL'ini logla
-  console.log('Making request to:', config.baseURL + config.url);
+  console.log('Making request to:', baseURL + config.url);
 
   // Token varsa ekle
   const token = localStorage.getItem('token');
@@ -122,7 +125,8 @@ api.interceptors.response.use(
     console.error('API Error:', {
       status: error.response?.status,
       message: error.response?.data?.message || error.message,
-      url: error.config?.url
+      url: error.config?.url,
+      baseURL: error.config?.baseURL
     });
     
     if (error.response?.status === 401) {
@@ -192,44 +196,56 @@ const checkRateLimit = (url) => {
 // API istekleri için wrapper fonksiyonlar
 const apiWrapper = {
   get: async (url, config = {}) => {
-    if (url.startsWith('/api/auth/')) {
-      return authApi.get(url, config);
+    try {
+      console.log('GET Request to:', apiUrl + url);
+      const response = await api.get(url, config);
+      return response;
+    } catch (error) {
+      console.error('GET Request Error:', {
+        url: apiUrl + url,
+        error: error.message
+      });
+      throw error;
     }
-    checkRateLimit(url);
-    return api.get(url, config);
   },
   post: async (url, data = {}, config = {}) => {
-    if (url.startsWith('/api/auth/')) {
-      try {
-        const response = await authApi.post(url, data, {
-          ...config,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            ...config.headers
-          }
-        });
-
-        return response;
-      } catch (error) {
-        console.error('Auth API error:', {
-          url,
-          error: error.message,
-          status: error.response?.status
-        });
-        throw error;
-      }
+    try {
+      console.log('POST Request to:', apiUrl + url);
+      const response = await api.post(url, data, config);
+      return response;
+    } catch (error) {
+      console.error('POST Request Error:', {
+        url: apiUrl + url,
+        error: error.message
+      });
+      throw error;
     }
-    checkRateLimit(url);
-    return api.post(url, data, config);
   },
   put: async (url, data = {}, config = {}) => {
-    checkRateLimit(url);
-    return api.put(url, data, config);
+    try {
+      console.log('PUT Request to:', apiUrl + url);
+      const response = await api.put(url, data, config);
+      return response;
+    } catch (error) {
+      console.error('PUT Request Error:', {
+        url: apiUrl + url,
+        error: error.message
+      });
+      throw error;
+    }
   },
   delete: async (url, config = {}) => {
-    checkRateLimit(url);
-    return api.delete(url, config);
+    try {
+      console.log('DELETE Request to:', apiUrl + url);
+      const response = await api.delete(url, config);
+      return response;
+    } catch (error) {
+      console.error('DELETE Request Error:', {
+        url: apiUrl + url,
+        error: error.message
+      });
+      throw error;
+    }
   }
 };
 
