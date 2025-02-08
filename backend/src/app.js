@@ -12,6 +12,15 @@ const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 
+// CORS için izin verilen originler
+const allowedOrigins = [
+  'https://esterimbenim.netlify.app',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5001',
+  'https://esteri-backend.onrender.com'
+];
+
 // Routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -137,7 +146,7 @@ app.get('/api/health', async (req, res) => {
         port: process.env.PORT || 5001,
         cors: {
           enabled: true,
-          origins: allowedOrigins
+          allowedOrigins: allowedOrigins
         }
       }
     });
@@ -150,15 +159,6 @@ app.get('/api/health', async (req, res) => {
     });
   }
 });
-
-// CORS ayarları
-const allowedOrigins = [
-  'https://esterimbenim.netlify.app',
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:5001',
-  'https://esteri-backend.onrender.com'
-];
 
 // CORS öncesi middleware
 app.use((req, res, next) => {
