@@ -4,11 +4,9 @@
   "description": "Esteri Restaurant Backend API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "NODE_ENV=production node server.js",
     "dev": "nodemon server.js",
-    "build": "npm install",
-    "prod": "NODE_ENV=production node server.js",
-    "test": "jest"
+    "build": "npm install"
   },
   "keywords": [],
   "author": "",

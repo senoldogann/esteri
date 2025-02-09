@@ -5,7 +5,7 @@ services:
     region: frankfurt
     rootDir: backend
     buildCommand: npm install
-    startCommand: npm run prod
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
