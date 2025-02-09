@@ -3,13 +3,14 @@ services:
     name: esteri-backend
     env: node
     region: frankfurt
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && node server.js
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
+        value: 3000
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
