@@ -2,6 +2,7 @@
   command = "npm install && npm run build"
   publish = "dist"
   base = "frontend"
+  ignore = "git diff --quiet HEAD^ HEAD ./"
 
 [build.environment]
   NODE_VERSION = "18"
