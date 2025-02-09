@@ -38,9 +38,8 @@ exports.protect = async (req, res, next) => {
             }
 
             // Admin kontrolü
-            console.log('Auth Middleware - Admin kontrolü:', user.isAdmin);
             console.log('Auth Middleware - Kullanıcı rolü:', user.role);
-            if (!user.isAdmin) {
+            if (user.role !== 'admin') {
                 return res.status(403).json({
                     success: false,
                     message: 'Bu alana erişim yetkiniz yok'

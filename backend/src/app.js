@@ -39,7 +39,7 @@ const reservationRoutes = require('./routes/reservationRoutes');
 const app = express();
 
 // Proxy güvenini ayarla (Render için gerekli)
-app.enable('trust proxy');
+app.set('trust proxy', 1);
 
 // Body parsing middleware'leri
 app.use(express.json({
@@ -100,14 +100,7 @@ const limiter = rateLimit({
         ];
         return skipPaths.some(path => req.path.startsWith(path));
     },
-    // IP adresi belirleme fonksiyonu
-    keyGenerator: (req) => {
-        // X-Forwarded-For header'ından IP adresini al
-        return req.ip || 
-               req.headers['x-forwarded-for'] || 
-               req.headers['x-real-ip'] ||
-               req.connection.remoteAddress;
-    }
+    trustProxy: true // Trust proxy ayarını true yapıyoruz
 });
 
 // Health check endpoint
