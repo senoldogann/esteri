@@ -327,8 +327,22 @@ const startServer = async () => {
         logger.info('Uploads dizini oluşturuldu');
 
         // Sunucuyu başlat
-        app.listen(PORT, () => {
-            logger.info(`Sunucu ${PORT} portunda çalışıyor`);
+        const server = app.listen(PORT, '0.0.0.0', () => {
+            const address = server.address();
+            logger.info(`Sunucu ${address.address}:${address.port} adresinde çalışıyor`);
+            logger.info(`Environment: ${process.env.NODE_ENV}`);
+            logger.info(`MongoDB URI: ${process.env.MONGODB_URI ? 'Configured' : 'Not Configured'}`);
+            logger.info(`Redis URL: ${process.env.REDIS_URL ? 'Configured' : 'Not Configured'}`);
+        });
+
+        // Graceful shutdown
+        process.on('SIGTERM', () => {
+            logger.info('SIGTERM signal received.');
+            logger.info('Closing HTTP server.');
+            server.close(() => {
+                logger.info('HTTP server closed.');
+                process.exit(0);
+            });
         });
 
     } catch (error) {
