@@ -119,16 +119,6 @@ app.get('/api/health', async (req, res) => {
     const { connection } = require('mongoose');
     const dbStatus = connection.readyState === 1 ? 'connected' : 'disconnected';
 
-    // Redis bağlantısını kontrol et
-    const { redisClient } = require('./utils/database');
-    let redisStatus = 'disconnected';
-    try {
-      await redisClient.ping();
-      redisStatus = 'connected';
-    } catch (error) {
-      redisStatus = 'error: ' + error.message;
-    }
-
     // Uploads klasörünü kontrol et
     const fs = require('fs').promises;
     const uploadsDir = path.join(__dirname, '../uploads/products');
@@ -149,8 +139,7 @@ app.get('/api/health', async (req, res) => {
       memory: process.memoryUsage(),
       uptime: process.uptime(),
       connections: {
-        mongodb: dbStatus,
-        redis: redisStatus
+        mongodb: dbStatus
       },
       storage: {
         uploads: uploadsStatus
@@ -315,11 +304,6 @@ const startServer = async () => {
         await connectDB();
         logger.info('MongoDB bağlantısı başarılı');
 
-        // Redis bağlantısını kontrol et
-        const { redisClient } = require('./utils/database');
-        await redisClient.ping();
-        logger.info('Redis bağlantısı başarılı');
-
         // Uploads klasörünü oluştur
         const uploadsDir = path.join(__dirname, '../uploads/products');
         const fs = require('fs').promises;
@@ -332,7 +316,6 @@ const startServer = async () => {
             logger.info(`Sunucu ${address.address}:${address.port} adresinde çalışıyor`);
             logger.info(`Environment: ${process.env.NODE_ENV}`);
             logger.info(`MongoDB URI: ${process.env.MONGODB_URI ? 'Configured' : 'Not Configured'}`);
-            logger.info(`Redis URL: ${process.env.REDIS_URL ? 'Configured' : 'Not Configured'}`);
         });
 
         // Graceful shutdown

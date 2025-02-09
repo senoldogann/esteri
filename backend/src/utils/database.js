@@ -1,41 +1,44 @@
 const mongoose = require('mongoose');
-const Redis = require('redis');
-const { MONGODB_URI, REDIS_URL } = require('../config/config');
 const logger = require('./logger');
+const { MONGODB_URI } = require('../config/config');
 
-// Redis Client
-const redisClient = Redis.createClient({
-    url: REDIS_URL
-});
-
-redisClient.on('error', (err) => logger.error('Redis Client Error', err));
-redisClient.on('connect', () => logger.info('Redis Client Connected'));
-
-// Redis'e bağlan
-redisClient.connect().catch(err => logger.error('Redis Connection Error:', err));
-
-// MongoDB Connection
+// MongoDB'ye bağlan
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(MONGODB_URI);
+        const conn = await mongoose.connect(MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
         
         logger.info(`MongoDB Connected: ${conn.connection.host}`);
         
-        // Create indexes for better performance
-        await Promise.all([
-            mongoose.model('Category').createIndexes(),
-            mongoose.model('Product').createIndexes(),
-            mongoose.model('User').createIndexes(),
-            mongoose.model('Reservation').createIndexes()
-        ]);
+        // Bağlantı hatalarını dinle
+        mongoose.connection.on('error', err => {
+            logger.error('MongoDB connection error:', err);
+        });
+        
+        mongoose.connection.on('disconnected', () => {
+            logger.warn('MongoDB disconnected');
+        });
+        
+        // Uygulama kapandığında bağlantıyı kapat
+        process.on('SIGINT', async () => {
+            try {
+                await mongoose.connection.close();
+                logger.info('MongoDB connection closed through app termination');
+                process.exit(0);
+            } catch (err) {
+                logger.error('Error closing MongoDB connection:', err);
+                process.exit(1);
+            }
+        });
         
     } catch (error) {
-        logger.error(`Error: ${error.message}`);
+        logger.error('Error connecting to MongoDB:', error);
         process.exit(1);
     }
 };
 
 module.exports = {
-    connectDB,
-    redisClient
+    connectDB
 }; 
