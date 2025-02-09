@@ -183,9 +183,10 @@ const corsOptions = {
       callback(new Error('CORS policy violation: Origin not allowed'));
     }
   },
-  credentials: false,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
   maxAge: 86400 // 24 saat
 };
 
@@ -194,29 +195,17 @@ app.use(cors(corsOptions));
 
 // CORS öncesi middleware
 app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
   const origin = req.headers.origin;
-  
-  // Origin kontrolü
   if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', corsOptions.methods.join(', '));
-    res.setHeader('Access-Control-Allow-Headers', corsOptions.allowedHeaders.join(', '));
-    res.setHeader('Access-Control-Allow-Credentials', String(corsOptions.credentials));
-    res.setHeader('Access-Control-Max-Age', String(corsOptions.maxAge));
+    res.header('Access-Control-Allow-Origin', origin);
   }
   
-  // OPTIONS istekleri için hemen yanıt ver
   if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  
-  // Geçersiz origin için hata döndür
-  if (!allowedOrigins.includes(origin) && origin) {
-    return res.status(403).json({
-      status: 'error',
-      message: 'CORS policy violation: Origin not allowed',
-      origin: origin
-    });
+    return res.status(200).end();
   }
   
   next();
