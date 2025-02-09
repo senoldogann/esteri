@@ -12,7 +12,7 @@ const {
     deleteProductImage
 } = require('../controllers/productController');
 const { protect, authorize } = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
 
 // Validation middleware
 const productValidation = [
@@ -64,13 +64,13 @@ router.put('/reorder',
 );
 
 router.post('/', 
-    upload.single('image'),
+    upload,
     productValidation,
     createProduct
 );
 
 router.put('/:id', 
-    upload.single('image'),
+    upload,
     productValidation,
     updateProduct
 );
@@ -79,7 +79,7 @@ router.delete('/:id', deleteProduct);
 
 // Image routes
 router.post('/:id/image',
-    upload.single('image'),
+    upload,
     uploadProductImage
 );
 
