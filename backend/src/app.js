@@ -271,9 +271,11 @@ app.use('/api/reservations', reservationRoutes);
 
 // 404 handler
 app.use((req, res) => {
+    logger.error(`404 - Not Found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({
         success: false,
-        message: 'Sayfa bulunamadı'
+        message: 'Sayfa bulunamadı',
+        path: req.originalUrl
     });
 });
 

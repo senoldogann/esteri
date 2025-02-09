@@ -791,9 +791,6 @@ const ProductDetail = () => {
                 mt: 3,
                 bgcolor: '#ECBC4B',
                 color: '#000',
-                '&:hover': {
-                  bgcolor: '#d4a73d'
-                },
                 py: 1.5,
                 px: 4,
                 borderRadius: 2,

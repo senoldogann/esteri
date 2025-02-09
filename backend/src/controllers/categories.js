@@ -1,29 +1,41 @@
 const Category = require('../models/Category');
 const logger = require('../utils/logger');
 const mongoose = require('mongoose');
+const asyncHandler = require('../middleware/async');
 
 // @desc    Tüm kategorileri getir
 // @route   GET /api/categories
 // @access  Public
-exports.getCategories = async (req, res) => {
-    try {
-        const categories = await Category.find({ isActive: true })
-            .sort('order')
-            .populate('products');
-
-        res.status(200).json({
-            success: true,
-            count: categories.length,
-            data: categories
-        });
-    } catch (error) {
-        logger.error('Get Categories Error:', error);
-        res.status(500).json({
+exports.getCategories = asyncHandler(async (req, res) => {
+    // MongoDB bağlantısını kontrol et
+    if (mongoose.connection.readyState !== 1) {
+        logger.error('MongoDB bağlantısı yok');
+        return res.status(500).json({
             success: false,
-            message: 'Kategoriler alınamadı'
+            message: 'Veritabanı bağlantısı kurulamadı'
         });
     }
-};
+
+    const categories = await Category.find({ isActive: true })
+        .sort('order')
+        .populate('products')
+        .lean();
+
+    if (!categories) {
+        return res.status(404).json({
+            success: false,
+            message: 'Kategori bulunamadı'
+        });
+    }
+
+    logger.info(`${categories.length} kategori başarıyla getirildi`);
+
+    res.status(200).json({
+        success: true,
+        count: categories.length,
+        data: categories
+    });
+});
 
 // @desc    Tek kategori getir
 // @route   GET /api/categories/:id

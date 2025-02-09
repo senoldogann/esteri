@@ -42,12 +42,17 @@ const upload = multer({
 
 // Hero Section'ı getir
 exports.getHeroSection = asyncHandler(async (req, res) => {
-    const heroSection = await HeroSection.findOne({ isActive: true });
+    let heroSection = await HeroSection.findOne({ isActive: true });
 
+    // Eğer hero section yoksa, varsayılan bir tane oluştur
     if (!heroSection) {
-        return res.status(404).json({
-            success: false,
-            error: 'Hero section bulunamadı'
+        heroSection = await HeroSection.create({
+            title: 'Hoş Geldiniz',
+            subtitle: 'Esteri\'ye Hoş Geldiniz',
+            description: 'Sizin için en iyi hizmeti sunuyoruz',
+            buttonText: 'Daha Fazla',
+            buttonLink: '/hakkimizda',
+            isActive: true
         });
     }
 

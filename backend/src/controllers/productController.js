@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const mongoose = require('mongoose');
+const logger = require('../utils/logger');
 
 // Upload dizini
 const UPLOAD_PATH = path.join(__dirname, '../..', 'uploads/products');
@@ -42,12 +43,32 @@ const upload = multer({
 
 // Tüm ürünleri getir
 exports.getProducts = asyncHandler(async (req, res) => {
+    // MongoDB bağlantısını kontrol et
+    if (mongoose.connection.readyState !== 1) {
+        logger.error('MongoDB bağlantısı yok');
+        return res.status(500).json({
+            success: false,
+            message: 'Veritabanı bağlantısı kurulamadı'
+        });
+    }
+
     const products = await Product.find()
         .sort('order')
-        .populate('category');
+        .populate('category')
+        .lean();
+
+    if (!products) {
+        return res.status(404).json({
+            success: false,
+            message: 'Ürün bulunamadı'
+        });
+    }
+
+    logger.info(`${products.length} ürün başarıyla getirildi`);
 
     res.status(200).json({
         success: true,
+        count: products.length,
         data: products
     });
 });
