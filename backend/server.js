@@ -13,20 +13,9 @@ const startServer = async () => {
         logger.info('MongoDB bağlantısı başarılı');
 
         // Sunucuyu başlat
-        const server = app.listen(PORT, '0.0.0.0', () => {
-            const address = server.address();
-            logger.info(`Sunucu ${address.address}:${address.port} adresinde çalışıyor`);
+        app.listen(PORT, () => {
+            logger.info(`Sunucu ${PORT} portunda çalışıyor`);
             logger.info(`Environment: ${process.env.NODE_ENV}`);
-        });
-
-        // Graceful shutdown
-        process.on('SIGTERM', () => {
-            logger.info('SIGTERM signal received.');
-            logger.info('Closing HTTP server.');
-            server.close(() => {
-                logger.info('HTTP server closed.');
-                process.exit(0);
-            });
         });
 
     } catch (error) {
