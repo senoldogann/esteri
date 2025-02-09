@@ -281,64 +281,106 @@ exports.updateProduct = asyncHandler(async (req, res) => {
 
 // Ürün resmi yükle
 exports.uploadProductImage = asyncHandler(async (req, res) => {
-    upload(req, res, async function(err) {
-        if (err) {
-            console.error('Resim yükleme hatası:', err);
+    try {
+        const product = await Product.findById(req.params.id);
+        
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ürün bulunamadı'
+            });
+        }
+
+        // Eğer dosya yüklenmemişse
+        if (!req.file) {
             return res.status(400).json({
                 success: false,
-                error: err.message || 'Resim yüklenirken bir hata oluştu'
+                message: 'Lütfen bir resim dosyası yükleyin'
             });
         }
 
-        try {
-            if (!req.file) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Lütfen bir resim seçin'
-                });
+        // Eski resmi sil
+        if (product.image) {
+            const oldImagePath = path.join(UPLOAD_PATH, product.image);
+            if (fs.existsSync(oldImagePath)) {
+                fs.unlinkSync(oldImagePath);
             }
+        }
 
-            const product = await Product.findById(req.params.id);
-            if (!product) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Ürün bulunamadı'
-                });
-            }
+        // Yeni resmi kaydet
+        product.image = req.file.filename;
+        await product.save();
 
-            // Eski resmi sil
-            if (product.image) {
-                const oldImagePath = path.join(UPLOAD_PATH, product.image.replace('uploads/products/', ''));
-                if (fs.existsSync(oldImagePath)) {
-                    fs.unlinkSync(oldImagePath);
-                }
-            }
+        await createActivity({
+            type: 'update',
+            module: 'product',
+            description: `${product.name} ürününün resmi güncellendi`,
+            user: req.user?.name || 'Admin'
+        });
 
-            // Yeni resim yolunu kaydet
-            const imagePath = `uploads/products/${req.file.filename}`;
-            
-            const updatedProduct = await Product.findByIdAndUpdate(
-                req.params.id,
-                { image: imagePath },
-                { new: true }
-            );
+        res.status(200).json({
+            success: true,
+            data: product
+        });
+    } catch (error) {
+        logger.error('Resim yükleme hatası:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Resim yüklenirken bir hata oluştu',
+            error: error.message
+        });
+    }
+});
 
-            res.status(200).json({
-                success: true,
-                data: updatedProduct
-            });
-        } catch (error) {
-            console.error('Resim güncelleme hatası:', error);
-            // Hata durumunda yüklenen resmi sil
-            if (req.file) {
-                fs.unlink(req.file.path, () => {});
-            }
-            res.status(500).json({
+// Ürün resmini sil
+exports.deleteProductImage = asyncHandler(async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        
+        if (!product) {
+            return res.status(404).json({
                 success: false,
-                error: error.message || 'Resim güncellenirken bir hata oluştu'
+                message: 'Ürün bulunamadı'
             });
         }
-    });
+
+        // Resim yoksa hata döndür
+        if (!product.image) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bu ürünün resmi bulunmuyor'
+            });
+        }
+
+        // Resmi dosya sisteminden sil
+        const imagePath = path.join(UPLOAD_PATH, product.image);
+        if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+        }
+
+        // Ürünün resim alanını temizle
+        product.image = undefined;
+        await product.save();
+
+        await createActivity({
+            type: 'delete',
+            module: 'product',
+            description: `${product.name} ürününün resmi silindi`,
+            user: req.user?.name || 'Admin'
+        });
+
+        res.status(200).json({
+            success: true,
+            data: product
+        });
+    } catch (error) {
+        logger.error('Resim silme hatası:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Resim silinirken bir hata oluştu',
+            error: error.message
+        });
+    }
 });
 
 // Ürün sil
