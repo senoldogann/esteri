@@ -10,7 +10,7 @@ const {
     reorderProducts,
     uploadProductImage,
     deleteProductImage
-} = require('../controllers/products');
+} = require('../controllers/productController');
 const { protect, authorize } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 

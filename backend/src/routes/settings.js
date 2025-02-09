@@ -63,9 +63,7 @@ router.use(protect);
 router.use(authorize('admin'));
 
 router.post('/', settingValidation, createSetting);
-// Admin routes
-router.post('/', protect, authorize('admin'), settingValidation, clearCache, createSetting);
-router.put('/:name', protect, authorize('admin'), settingValidation, clearCache, updateSetting);
-router.delete('/:name', protect, authorize('admin'), clearCache, deleteSetting);
+router.put('/:name', settingValidation, updateSetting);
+router.delete('/:name', deleteSetting);
 
 module.exports = router; 
