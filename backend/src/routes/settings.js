@@ -6,10 +6,7 @@ const {
     getSetting,
     createSetting,
     updateSetting,
-    deleteSetting,
-    updateSettings,
-    getSettingsByKey,
-    updateSettingsByKey
+    deleteSetting
 } = require('../controllers/settings');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -56,7 +53,6 @@ const settingValidation = [
 // Public routes
 router.get('/', getSettings);
 router.get('/:name', getSetting);
-router.get('/:key', getSettingsByKey);
 
 // Protected routes
 router.use(protect);
