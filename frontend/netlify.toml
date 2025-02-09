@@ -39,8 +39,4 @@
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-
-# Akıllı build algılama özelliğini devre dışı bırak
-[build.ignore]
-  enable = false 
+    X-XSS-Protection = "1; mode=block" 
