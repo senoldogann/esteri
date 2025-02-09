@@ -13,10 +13,30 @@ const startServer = async () => {
         logger.info('MongoDB bağlantısı başarılı');
 
         // Sunucuyu başlat
-        app.listen(PORT, () => {
-            logger.info(`Sunucu ${PORT} portunda çalışıyor`);
+        const server = app.listen(PORT, '0.0.0.0', () => {
+            const addr = server.address();
+            logger.info(`Server running at http://${addr.address}:${addr.port}`);
             logger.info(`Environment: ${process.env.NODE_ENV}`);
+            logger.info(`Port: ${PORT}`);
+            logger.info(`Process ID: ${process.pid}`);
         });
+
+        // Graceful shutdown
+        const shutdown = () => {
+            logger.info('Received kill signal, shutting down gracefully');
+            server.close(() => {
+                logger.info('Closed out remaining connections');
+                process.exit(0);
+            });
+
+            setTimeout(() => {
+                logger.error('Could not close connections in time, forcefully shutting down');
+                process.exit(1);
+            }, 10000);
+        };
+
+        process.on('SIGTERM', shutdown);
+        process.on('SIGINT', shutdown);
 
     } catch (error) {
         logger.error('Sunucu başlatılamadı:', error);
@@ -24,30 +44,4 @@ const startServer = async () => {
     }
 };
 
-// Sunucuyu başlat
-startServer();
-
-// Graceful shutdown
-const shutdown = async () => {
-    logger.info('Shutting down gracefully...');
-    try {
-        // Redis bağlantısını kapat
-        const { redisClient } = require('./src/utils/database');
-        await redisClient.quit();
-        logger.info('Redis connection closed.');
-
-        // MongoDB bağlantısını kapat
-        const mongoose = require('mongoose');
-        await mongoose.connection.close();
-        logger.info('MongoDB connection closed.');
-
-        process.exit(0);
-    } catch (error) {
-        logger.error('Error during shutdown:', error);
-        process.exit(1);
-    }
-};
-
-// Shutdown signals
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown); 
+startServer(); 
