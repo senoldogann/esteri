@@ -10,7 +10,6 @@ const {
     reorderCategories
 } = require('../controllers/categories');
 const { protect, authorize } = require('../middleware/auth');
-const { cache, clearCache } = require('../middleware/cache');
 
 // Validation middleware
 const categoryValidation = [
@@ -37,8 +36,8 @@ const reorderValidation = [
 ];
 
 // Public routes
-router.get('/', cache(300), getCategories);
-router.get('/:id', cache(300), getCategory);
+router.get('/', getCategories);
+router.get('/:id', getCategory);
 
 // Protected routes
 router.use(protect);
@@ -47,24 +46,20 @@ router.use(authorize('admin'));
 // Reorder route should come before :id routes
 router.put('/reorder',
     reorderValidation,
-    clearCache('cache:*'),
     reorderCategories
 );
 
 router.post('/', 
     categoryValidation,
-    clearCache('cache:*'),
     createCategory
 );
 
 router.put('/:id', 
     categoryValidation,
-    clearCache('cache:*'),
     updateCategory
 );
 
 router.delete('/:id',
-    clearCache('cache:*'),
     deleteCategory
 );
 

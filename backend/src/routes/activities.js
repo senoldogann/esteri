@@ -1,10 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { getActivities } = require('../controllers/activityController');
-const { protect } = require('../middleware/auth');
-const { cache } = require('../middleware/cache');
+const { getActivities, createActivity, deleteActivity } = require('../controllers/activities');
+const { protect, authorize } = require('../middleware/auth');
 
-// Activities rotaları
-router.get('/', protect, cache(1), getActivities);
+// Public routes
+router.get('/', getActivities);
+
+// Protected routes
+router.use(protect);
+router.use(authorize('admin'));
+
+router.post('/', createActivity);
+router.delete('/:id', deleteActivity);
 
 module.exports = router; 

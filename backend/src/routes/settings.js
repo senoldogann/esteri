@@ -6,10 +6,12 @@ const {
     getSetting,
     createSetting,
     updateSetting,
-    deleteSetting
+    deleteSetting,
+    updateSettings,
+    getSettingsByKey,
+    updateSettingsByKey
 } = require('../controllers/settings');
 const { protect, authorize } = require('../middleware/auth');
-const { cache, clearCache } = require('../middleware/cache');
 
 // Validation middleware
 const settingValidation = [
@@ -52,9 +54,15 @@ const settingValidation = [
 ];
 
 // Public routes
-router.get('/', cache(300), getSettings);
-router.get('/:name', cache(300), getSetting);
+router.get('/', getSettings);
+router.get('/:name', getSetting);
+router.get('/:key', getSettingsByKey);
 
+// Protected routes
+router.use(protect);
+router.use(authorize('admin'));
+
+router.post('/', settingValidation, createSetting);
 // Admin routes
 router.post('/', protect, authorize('admin'), settingValidation, clearCache, createSetting);
 router.put('/:name', protect, authorize('admin'), settingValidation, clearCache, updateSetting);

@@ -1,7 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
 const router = express.Router();
-
 const {
     getProducts,
     getProduct,
@@ -10,11 +9,10 @@ const {
     deleteProduct,
     reorderProducts,
     uploadProductImage,
-    updateAllProducts
-} = require('../controllers/productController');
-
+    deleteProductImage
+} = require('../controllers/products');
 const { protect, authorize } = require('../middleware/auth');
-const { cache, clearCache } = require('../middleware/cache');
+const upload = require('../middleware/upload');
 
 // Validation middleware
 const productValidation = [
@@ -22,48 +20,71 @@ const productValidation = [
         .trim()
         .isLength({ min: 2, max: 100 })
         .withMessage('Ürün adı 2-100 karakter arasında olmalıdır'),
+    body('description')
+        .optional()
+        .trim()
+        .isLength({ max: 1000 })
+        .withMessage('Açıklama en fazla 1000 karakter olabilir'),
     body('price')
         .isFloat({ min: 0 })
-        .withMessage('Fiyat 0\'dan büyük olmalıdır'),
-    body('familyPrice')
-        .optional()
-        .isFloat({ min: 0 })
-        .withMessage('Aile boy fiyatı 0\'dan büyük olmalıdır'),
+        .withMessage('Fiyat pozitif bir sayı olmalıdır'),
     body('category')
-        .notEmpty()
-        .withMessage('Kategori seçimi zorunludur'),
-    body('ingredients')
+        .isMongoId()
+        .withMessage('Geçerli bir kategori ID\'si gereklidir'),
+    body('order')
         .optional()
-        .custom((value) => {
-            if (value) {
-                if (Array.isArray(value)) {
-                    return value.every(item => typeof item === 'string');
-                }
-                return typeof value === 'string';
-            }
-            return true;
+        .isInt({ min: 0 })
+        .withMessage('Sıralama değeri pozitif bir sayı olmalıdır')
+];
+
+const reorderValidation = [
+    body('products')
+        .isArray()
+        .withMessage('Ürünler dizisi gereklidir')
+        .custom((products) => {
+            return products.every(prod => 
+                prod.id && typeof prod.order === 'number' && prod.order >= 0
+            );
         })
-        .withMessage('Malzemeler dizi veya virgülle ayrılmış metin olmalıdır')
+        .withMessage('Geçersiz ürün sıralaması')
 ];
 
 // Public routes
-router.get('/', cache(300), getProducts);
-router.get('/:slug', cache(300), getProduct);
+router.get('/', getProducts);
+router.get('/:id', getProduct);
 
 // Protected routes
 router.use(protect);
 router.use(authorize('admin'));
 
-// Tüm ürünleri güncelle ve slug oluştur
-router.post('/update-all', clearCache('cache:*'), updateAllProducts);
+// Reorder route should come before :id routes
+router.put('/reorder',
+    reorderValidation,
+    reorderProducts
+);
 
-// Reorder route'u ID route'larından önce gelmeli
-router.put('/reorder', clearCache('cache:*'), reorderProducts);
+router.post('/', 
+    upload.single('image'),
+    productValidation,
+    createProduct
+);
 
-// ID'ye bağlı route'lar
-router.post('/', productValidation, clearCache('cache:*'), createProduct);
-router.put('/:id', productValidation, clearCache('cache:*'), updateProduct);
-router.delete('/:id', clearCache('cache:*'), deleteProduct);
-router.post('/:id/image', clearCache('cache:*'), uploadProductImage);
+router.put('/:id', 
+    upload.single('image'),
+    productValidation,
+    updateProduct
+);
+
+router.delete('/:id', deleteProduct);
+
+// Image routes
+router.post('/:id/image',
+    upload.single('image'),
+    uploadProductImage
+);
+
+router.delete('/:id/image',
+    deleteProductImage
+);
 
 module.exports = router; 

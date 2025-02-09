@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/auth');
 const { getSiteSettings, updateSiteSettings } = require('../controllers/siteSettings');
-const { clearCache } = require('../middleware/cache');
+const { protect, authorize } = require('../middleware/auth');
 
-// Public route
+// Public routes
 router.get('/', getSiteSettings);
 
-// Admin route
-router.put('/', protect, authorize('admin'), clearCache('cache:*'), updateSiteSettings);
+// Protected routes
+router.use(protect);
+router.use(authorize('admin'));
+
+router.put('/', updateSiteSettings);
 
 module.exports = router; 
