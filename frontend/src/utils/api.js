@@ -25,8 +25,7 @@ const authApi = axios.create({
   withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Origin': window.location.origin
+    'Accept': 'application/json'
   },
   timeout: 30000,
   validateStatus: status => status >= 200 && status < 500
@@ -212,13 +211,7 @@ const apiWrapper = {
   get: async (url, config = {}) => {
     try {
       console.log('GET Request to:', apiUrl + url);
-      const response = await api.get(url, {
-        ...config,
-        headers: {
-          ...config.headers,
-          'Origin': window.location.origin
-        }
-      });
+      const response = await api.get(url, config);
       return response;
     } catch (error) {
       console.error('GET Request Error:', {
@@ -232,13 +225,7 @@ const apiWrapper = {
   post: async (url, data = {}, config = {}) => {
     try {
       console.log('POST Request to:', apiUrl + url);
-      const response = await api.post(url, data, {
-        ...config,
-        headers: {
-          ...config.headers,
-          'Origin': window.location.origin
-        }
-      });
+      const response = await api.post(url, data, config);
       return response;
     } catch (error) {
       console.error('POST Request Error:', {

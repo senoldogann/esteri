@@ -4,8 +4,8 @@ services:
     env: node
     region: frankfurt
     plan: free
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -28,4 +28,6 @@ services:
     disk:
       name: esteri-uploads
       mountPath: /opt/render/project/src/uploads
-      sizeGB: 1 
+      sizeGB: 1
+    runtime: node
+    nodeVersion: 18.x 
