@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: esteri-backend
+    env: node
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm run prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: FRONTEND_URL
+        value: https://esterimbenim.netlify.app
+    healthCheckPath: /api/health
+    healthCheckTimeout: 300
+    autoDeploy: true
+    plan: free 
