@@ -3,9 +3,9 @@ services:
     name: esteri-backend
     env: node
     region: frankfurt
-    rootDir: backend
-    buildCommand: npm install
-    startCommand: node server.js
+    plan: free
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm run dev
     envVars:
       - key: NODE_ENV
         value: production
@@ -21,8 +21,10 @@ services:
         value: https://esterimbenim.netlify.app
     healthCheckPath: /api/health
     healthCheckTimeout: 300
-    autoDeploy: true
-    plan: free
+    autoDeploy: false
+    pullRequestPreviewsEnabled: false
+    domains:
+      - esteri-backend.onrender.com
     disk:
       name: esteri-uploads
       mountPath: /opt/render/project/src/uploads
