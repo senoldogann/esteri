@@ -3,6 +3,7 @@ services:
     name: esteri-backend
     env: node
     region: frankfurt
+    rootDir: backend
     buildCommand: npm install
     startCommand: npm run prod
     envVars:
@@ -21,4 +22,8 @@ services:
     healthCheckPath: /api/health
     healthCheckTimeout: 300
     autoDeploy: true
-    plan: free 
+    plan: free
+    disk:
+      name: esteri-uploads
+      mountPath: /opt/render/project/src/uploads
+      sizeGB: 1 
